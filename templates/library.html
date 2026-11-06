@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+
+{% block title %}{% if collection == 'manga' %}manga · {% endif %}{{ site.title }}{% endblock %}
+
+{% block main %}
+<div id="library" data-noun="{{ noun }}">
+  <h1 class="note-title">{{ 'manga' if collection == 'manga' else 'Books' }}</h1>
+  <p class="note-meta" id="lib-meta">{{ stats.books }} {{ noun }} · {{ stats.read }} read · {{ stats.pages|num }} pages</p>
+
+  <div class="toolbar">
+    <button type="button" class="pill is-active" data-view="covers" aria-pressed="true">shelf</button>
+    <button type="button" class="pill" data-view="series" aria-pressed="false">series</button>
+  </div>
+
+  {#
+    Inline filters: kind (fiction/non-fiction, books collection only) and status.
+    To filter by year, type or series too, add a matching loop below — the URL
+    (?year=, ?type=, ?series=) and app.js already handle any of `filters`' keys.
+  #}
+  {% if filters.kind or filters.status %}
+  <div class="toolbar filters-bar">
+    {% for key in ['kind', 'status'] %}
+    {% for value, text, count in filters[key] %}
+    <a class="pill filter" href="{{ home }}?{{ key }}={{ value|urlencode }}" data-filter="{{ key }}" data-value="{{ value }}">{{ text }} <span class="count">{{ count }}</span></a>
+    {% endfor %}
+    {% endfor %}
+    <a class="pill clear" id="clear-filters" href="{{ home }}" hidden>clear</a>
+  </div>
+  {% endif %}
+
+  <section id="view-covers">
+    {% for g in cover_groups %}
+    <section class="group">
+      <div class="group-head"><h2>{{ g.title }}</h2><span>{{ g.meta }}</span></div>
+      <div class="covers">
+        {% for b in g.books %}{{ m.cover(b, root) }}{% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  </section>
+
+  <section id="view-series" hidden>
+    {% for g in series_groups %}
+    <section class="group">
+      {{ m.series_shelf(g, root) }}
+    </section>
+    {% endfor %}
+  </section>
+
+  <p class="empty" id="empty" hidden>No books match. Clear the search or a filter.</p>
+</div>
+{% endblock %}

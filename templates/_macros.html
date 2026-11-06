@@ -1,0 +1,66 @@
+{# Attributes the client-side filter reads. Keep in sync with static/app.js. #}
+{% macro attrs(b) -%}
+data-item data-status="{{ b.status }}" data-kind="{{ b.kind }}" data-year="{{ b.read_year }}" data-types='{{ b.types|tojson }}' data-series='{{ b.series|tojson }}' data-search="{{ b.search_text }}" data-pages="{{ b.pages }}" data-date="{{ b.sort_date }}" data-title="{{ b.title|lower }}" data-author="{{ (b.authors[0] if b.authors else '')|lower }}"
+{%- endmacro %}
+
+{# One cover tile. `caption` sits above the cover (series order); `reserve` keeps rows aligned when a caption is missing. #}
+{% macro cover(b, root, caption='', reserve=false, current=false, filterable=true) %}
+<div class="bk-wrap"{% if filterable %} {{ attrs(b) }}{% endif %}>
+  {% if caption %}
+  <span class="bk-cap">{{ caption }}</span>
+  {% elif reserve %}
+  <span class="bk-cap" aria-hidden="true">&nbsp;</span>
+  {% endif %}
+  <a class="bk s-{{ b.status }}{% if current %} is-current{% endif %}" href="{{ root }}books/{{ b.slug }}/" title="{{ b.title }}{% if b.authors %} — {{ b.authors|join(', ') }}{% endif %}" aria-label="{{ b.title }}{% if b.authors %} by {{ b.authors|join(', ') }}{% endif %}">
+    <span class="bk-img"><img src="{{ root }}{{ b.cover }}" alt="" width="{{ b.cover_w or 200 }}" height="{{ b.cover_h or 300 }}" loading="lazy" decoding="async"></span>
+  </a>
+</div>
+{% endmacro %}
+
+{# Progress bar + one-line note for a series. `p` comes from build.py:series_progress. #}
+{% macro series_progress(p, root) %}
+<div class="progress" role="img" aria-label="{{ p.label }}">
+  {% if p.read %}<span class="p-read" style="width: {{ p.read_pct }}%"></span>{% endif %}
+  {% if p.reading %}<span class="p-reading" style="width: {{ p.reading_pct }}%"></span>{% endif %}
+  {% if p.want %}<span class="p-want" style="width: {{ p.want_pct }}%"></span>{% endif %}
+</div>
+<p class="progress-note">
+  {{ p.in_library }} in library
+  {%- if p.up_next %} · up next <a href="{{ root }}books/{{ p.up_next.slug }}/">#{{ p.up_next.order }} {{ p.up_next.title }}</a>
+  {%- elif p.missing %} · next in series: #{{ p.missing }}, not in library{% endif %}
+  {%- if p.earlier %} · earlier unread <a href="{{ root }}books/{{ p.earlier.slug }}/">#{{ p.earlier.order }} {{ p.earlier.title }}</a>{% if p.earlier_count > 1 %} +{{ p.earlier_count - 1 }}{% endif %}{% endif %}
+</p>
+{% endmacro %}
+
+{# One series group: heading, progress bar (if any), and its covers — nested into labeled
+   sub-series shelves when build.py found more than one (e.g. Discworld's "Rincewind Novels",
+   "Witches Novels"...). `mini` shrinks covers for the book page; `current_slug` outlines that
+   book wherever it appears. #}
+{% macro series_shelf(g, root, mini=false, current_slug=none) %}
+<div class="group-head{% if g.progress %} has-progress{% endif %}">
+  <h2>{{ g.title }}</h2><span>{{ g.progress.label if g.progress else g.meta }}</span>
+</div>
+{% if g.progress %}{{ series_progress(g.progress, root) }}{% endif %}
+{% if g.subgroups %}
+  {% for sub in g.subgroups %}
+  <div class="subseries">
+    <h3 class="subseries-title">{{ sub.name }}</h3>
+    <div class="covers{% if mini %} mini{% endif %}">
+      {% for b in sub.books %}{{ cover(b, root, caption=('#' ~ b.order) if b.order is not none else '', reserve=true, current=(current_slug and b.slug == current_slug), filterable=not mini) }}{% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {% if g.loose %}
+  <div class="subseries">
+    <h3 class="subseries-title">other {{ g.title }}</h3>
+    <div class="covers{% if mini %} mini{% endif %}">
+      {% for b in g.loose %}{{ cover(b, root, caption=('#' ~ b.order) if b.order is not none else '', reserve=true, current=(current_slug and b.slug == current_slug), filterable=not mini) }}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+{% else %}
+<div class="covers{% if mini %} mini{% endif %}">
+  {% for b in g.books %}{{ cover(b, root, caption=('#' ~ b.order) if g.numbered and b.order is not none else '', reserve=g.numbered, current=(current_slug and b.slug == current_slug), filterable=not mini) }}{% endfor %}
+</div>
+{% endif %}
+{% endmacro %}

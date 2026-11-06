@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site.title }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}Books I've read, am reading, and want to read.{% endblock %}">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t !== 'dark' && t !== 'light') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ root }}static/style.css?v={{ asset_v }}">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2388A082'/><path d='M 8 16 V 12 A 8 8 0 0 1 24 12 V 16' fill='none' stroke='%23FFFFFF' stroke-width='1.5' stroke-linecap='round'/><line x1='8' y1='16' x2='8' y2='25' stroke='%23FFFFFF' stroke-width='1.5' stroke-linecap='round'/><line x1='24' y1='16' x2='24' y2='25' stroke='%23FFFFFF' stroke-width='1.5' stroke-linecap='round'/><line x1='5' y1='25' x2='27' y2='25' stroke='%23FFFFFF' stroke-width='1.5' stroke-linecap='round'/></svg>">
+</head>
+<body data-root="{{ root }}" data-home="{{ home }}" data-collection="{{ collection }}">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="{{ root }}">{{ site.title }}</a>
+
+    <div class="topbar-tools" id="topbar-tools">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg>
+        <input class="search-input" id="q" type="search" placeholder="Search {{ 'manga' if collection == 'manga' else 'books' }}" aria-label="Search {{ 'manga' if collection == 'manga' else 'books' }}" autocomplete="off">
+        <button class="search-clear" id="search-clear" type="button" aria-label="Clear search" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+        <div class="search-results" id="search-results" hidden></div>
+      </div>
+    </div>
+
+    <button class="theme-toggle" id="theme" type="button"><span class="theme-toggle-dot"></span><span id="theme-label">dark</span></button>
+  </div>
+</header>
+
+<main class="main">
+  {% block main %}{% endblock %}
+</main>
+
+<script src="{{ root }}static/app.js?v={{ asset_v }}"></script>
+</body>
+</html>

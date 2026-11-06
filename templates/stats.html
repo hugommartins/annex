@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{% if collection == 'manga' %}manga {% endif %}stats · {{ site.title }}{% endblock %}
+{% block description %}{{ noun|capitalize }} and pages finished per year.{% endblock %}
+
+{% block main %}
+<article class="note-wrap">
+  <a class="back" href="{{ home }}">← {{ 'manga' if collection == 'manga' else 'library' }}</a>
+  <h1 class="note-title">stats</h1>
+
+  {% if has_manga %}
+  <div class="toolbar tabs">
+    <a class="pill{% if collection == 'books' %} is-active{% endif %}" href="{{ root }}stats/">books</a>
+    <a class="pill{% if collection == 'manga' %} is-active{% endif %}" href="{{ root }}manga/stats/">manga</a>
+  </div>
+  {% endif %}
+
+  {% if not year_stats %}
+  <p class="empty">No finished {{ noun }} yet.</p>
+  {% else %}
+  <p class="note-meta">
+    {{ year_stats.total_books|num }} {{ noun }} · {{ year_stats.total_pages|num }} pages ·
+    {{ year_stats.first }}{% if year_stats.last != year_stats.first %}–{{ year_stats.last }}{% endif %}
+  </p>
+
+  <div class="stats-card">
+    <h2>finished per year</h2>
+    <div class="ychart">
+      <div class="ychart-axis" aria-hidden="true">
+        <div class="axis-cell"><b>{{ noun }}</b><span>max {{ year_stats.max_books|num }}</span></div>
+        <div class="axis-cell"><b>pages</b><span>max {{ year_stats.max_pages|num }}</span></div>
+        <div class="axis-year"></div>
+      </div>
+      <div class="ychart-scroll" data-scroll-end tabindex="0" role="region" aria-label="{{ noun|capitalize }} and pages per year">
+        {% for r in year_stats.rows %}
+        <div class="ycol{% if r.year == year_stats.current %} is-current{% endif %}" title="{{ r.year }}: {{ r.books }} {{ noun }}, {{ r.pages|num }} pages">
+          <div class="ycell{% if not r.books %} is-zero{% endif %}"><span class="v">{{ r.books }}</span><span class="bar" style="--p: {{ r.books_p }}"></span></div>
+          <div class="ycell{% if not r.pages %} is-zero{% endif %}"><span class="v">{{ r.pages|num }}</span><span class="bar" style="--p: {{ r.pages_p }}"></span></div>
+          <span class="yl">{% if r.books %}<a href="{{ home }}?year={{ r.year }}">{{ r.year }}</a>{% else %}{{ r.year }}{% endif %}{% if r.year == year_stats.current %}*{% endif %}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <p class="note-meta">
+    {% if year_stats.last == year_stats.current %}* year in progress. {% endif %}
+    {% if year_stats.undated %}{{ year_stats.undated }} finished {{ 'book' if year_stats.undated == 1 else 'books' }} without a date {{ 'is' if year_stats.undated == 1 else 'are' }} not counted.{% endif %}
+  </p>
+  {% endif %}
+</article>
+{% endblock %}

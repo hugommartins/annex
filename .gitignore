@@ -1,0 +1,17 @@
+# Generated site and build cache
+/dist/
+/.cache/
+
+# Local Python environment and bytecode
+.venv/
+__pycache__/
+*.py[cod]
+path/
+
+# macOS
+.DS_Store
+
+# Obsidian machine-specific workspace state
+content/.obsidian/
+content/archive/
+content/_templates/

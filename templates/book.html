@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+
+{% block title %}{{ b.title }} · {{ site.title }}{% endblock %}
+{% block description %}{{ b.title }}{% if b.authors %} by {{ b.authors|join(', ') }}{% endif %}{% endblock %}
+
+{% block main %}
+<article class="note-wrap">
+  <a class="back" href="{{ home }}">← {{ 'manga' if collection == 'manga' else 'library' }}</a>
+
+  <div class="detail-head">
+    <div class="detail-cover s-{{ b.status }}">
+      <span class="bk-img"><img src="{{ root }}{{ b.cover }}" alt="Cover of {{ b.title }}" width="{{ b.cover_w or 200 }}" height="{{ b.cover_h or 300 }}"></span>
+    </div>
+    <div>
+      <h1 class="note-title">{{ b.title }}</h1>
+      {% if b.authors %}<p class="note-meta">{{ b.authors|join(', ') }}</p>{% endif %}
+    </div>
+  </div>
+
+  <dl class="meta-list">
+    <dt>status</dt><dd><span class="tag">{{ status_label[b.status] }}</span></dd>
+    {% if b.pages %}<dt>pages</dt><dd>{{ b.pages }}</dd>{% endif %}
+    <dt>started</dt><dd>{{ b.started|iso }}</dd>
+    <dt>finished</dt><dd>{{ b.finished|iso }}</dd>
+    {% if b.series %}
+    <dt>series</dt>
+    <dd>
+      {% for name in b.series %}
+      <a class="backlink-item" href="{{ home }}?series={{ name|urlencode }}&amp;view=series">{{ name }}{% if loop.first and b.order is not none %} #{{ b.order }}{% endif %}</a>
+      {% endfor %}
+    </dd>
+    {% endif %}
+    {% if b.types %}
+    <dt>type</dt>
+    <dd>{% for t in b.types %}<a class="tag" href="{{ home }}?type={{ t|urlencode }}">{{ t }}</a>{% endfor %}</dd>
+    {% endif %}
+  </dl>
+
+  {% if b.body_html %}
+  <div class="note-body">{{ b.body_html|safe }}</div>
+  {% endif %}
+
+  {% for block in series_blocks %}
+  <section class="backlinks">
+    {{ m.series_shelf(block, root, mini=true, current_slug=b.slug) }}
+  </section>
+  {% endfor %}
+
+  {% if more_by %}
+  <section class="backlinks">
+    <div class="group-head"><h2>more by {{ b.authors[0] }}</h2></div>
+    <ul class="backlink-list">
+      {% for x in more_by %}<li><a class="backlink-item" href="{{ root }}books/{{ x.slug }}/">{{ x.title }}</a></li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</article>
+{% endblock %}
