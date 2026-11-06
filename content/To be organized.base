@@ -1,0 +1,8 @@
+views:
+  - type: table
+    name: Table
+    filters:
+      and:
+        - note["1ToOrganize"] == true
+    order:
+      - file.name

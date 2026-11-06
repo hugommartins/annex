@@ -1,0 +1,27 @@
+views:
+  - type: cards
+    name: Fiction
+    filters:
+      and:
+        - file.tags.contains("fiction")
+        - Status != "Read"
+        - Status != "Reading"
+    order: []
+    sort:
+      - property: Series
+        direction: ASC
+    image: note.Cover
+    imageAspectRatio: 1.5
+    cardSize: 110
+  - type: cards
+    name: Non-fiction
+    filters:
+      and:
+        - file.tags.contains("nonFiction")
+        - Status != "Read"
+        - Status != "Reading"
+        - '!file.tags.contains("maybe")'
+    order: []
+    image: note.Cover
+    imageAspectRatio: 1.5
+    cardSize: 110

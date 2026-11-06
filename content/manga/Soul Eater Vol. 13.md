@@ -1,0 +1,17 @@
+---
+tags: [book, manga, digital, soulEater]
+Cover: https://static.wikia.nocookie.net/souleater/images/9/94/Volume_13.jpg/revision/latest?cb=20130201201704
+Type: Fiction, Comics
+Series: Soul Eater
+Volume: 13
+Author: Atsushi Оhkobo
+Status: Read
+Year: 2025
+Pages: 192
+StartedDate: 2025-01-15
+FinishedDate: 2025-01-16
+---
+```dataview
+table without id ("![50](" + Cover + ")") as Cover
+From "Books/Soul Eater Vol. 13"
+```

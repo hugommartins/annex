@@ -1,0 +1,17 @@
+views:
+  - type: cards
+    name: All Books
+    filters:
+      and:
+        - file.hasTag("fiction")
+        - "!Series.isEmpty()"
+    groupBy:
+      property: Series
+      direction: ASC
+    order: []
+    sort:
+      - property: Order
+        direction: ASC
+    image: note.Cover
+    imageAspectRatio: 1.5
+    cardSize: 130

@@ -1,0 +1,34 @@
+views:
+  - type: cards
+    name: All Manga
+    filters:
+      and:
+        - file.hasTag("manga")
+        - "!Series.isEmpty()"
+    groupBy:
+      property: Series
+      direction: ASC
+    order: []
+    sort:
+      - property: Order
+        direction: ASC
+    image: note.Cover
+    imageAspectRatio: 1.5
+    cardSize: 130
+  - type: cards
+    name: Read Manga From Series
+    filters:
+      and:
+        - file.hasTag("manga")
+        - Status == "Read"
+        - "!Series.isEmpty()"
+    groupBy:
+      property: Series
+      direction: ASC
+    order: []
+    sort:
+      - property: Order
+        direction: ASC
+    image: note.Cover
+    imageAspectRatio: 1.5
+    cardSize: 130

@@ -1,0 +1,24 @@
+filters:
+  and:
+    - file.inFolder("books")
+    - Status == "Read"
+views:
+  - type: cards
+    name: By Year
+    filters:
+      or:
+        - list(note["FinishedDate"]).length > 1
+        - Year > 2012
+    groupBy:
+      property: Year
+      direction: DESC
+    order: []
+    sort:
+      - property: FinishedDate
+        direction: ASC
+      - property: OrderInYear
+        direction: ASC
+    template: Templates/books re-read template
+    cardSize: 140
+    image: note.Cover
+    imageAspectRatio: 1.5
