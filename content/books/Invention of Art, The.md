@@ -1,6 +1,10 @@
 ---
 tags:
-  - book, art, history, nonFiction, maybe
+  - book
+  - art
+  - history
+  - nonFiction
+  - maybe
 Cover: https://m.media-amazon.com/images/I/619FFAOAUsL._UF1000,1000_QL80_.jpg
 Type: Art, History, Philosophy
 Author: Larry E. Shiner

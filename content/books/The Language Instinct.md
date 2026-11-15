@@ -4,7 +4,7 @@ Cover: https://static.fnac-static.com/multimedia/Images/PT/NR/be/12/0e/922302/15
 Type: Philosophy
 Author: Steven Pinker 
 Order: 
-Status: Queued
+Status: Reading
 Year: 
 Pages: 538
 CurrentPage: 

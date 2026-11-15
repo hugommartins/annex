@@ -1,6 +1,9 @@
 ---
 tags:
-  - book, nonFiction, philosophy, maybe
+  - book
+  - nonFiction
+  - philosophy
+  - maybe
 Cover: https://m.media-amazon.com/images/I/71sfHxrKyNL._UF1000,1000_QL80_.jpg
 Type: Civilization, Philosophy
 Author: Hannah Arendt

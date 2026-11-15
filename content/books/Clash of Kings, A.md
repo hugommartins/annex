@@ -20,5 +20,3 @@ Pages: 942
 Month: April
 OrderInYear: 10
 ---
-
-Last modified @ `$= dv.current().file.mtime`
