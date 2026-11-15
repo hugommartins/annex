@@ -13,6 +13,7 @@ import fnmatch
 import hashlib
 import html
 import json
+import os
 import re
 import shutil
 import sys
@@ -38,6 +39,12 @@ except ImportError:  # covers are copied as-is instead of resized to WebP
     Image = None
 
 ROOT = Path(__file__).resolve().parent
+
+# The shared look (neutral colours, fonts, header, code styling). A git submodule at
+# vendor/site-ui; set SITE_UI_DIR to a local clone to try changes without committing them.
+SITE_UI_REQUIRED = ["tokens.css", "base.css", "fonts.css", "nav.css", "code.css", "theme.js", "header.html"]
+SITE_UI_SKIP_DIRS = {".git", ".github", "docs", "tests", "node_modules", "__pycache__"}
+SITE_UI_SKIP_FILES = {"demo.html"}  # plus *.md
 
 BOOK_TAGS = {"book", "ebook"}  # a note counts as a book if `tags` includes either (hyphens/spaces ignored, so 'e-book' matches)
 STATUS_MAP = {
@@ -227,7 +234,7 @@ class Book:
 
     @property
     def manga(self) -> bool:
-        """Manga has its own collection: 'manga' in Type or tags."""
+        """True when 'manga' appears in Type or tags."""
         return "manga" in self._tokens()
 
     @property
@@ -255,7 +262,7 @@ def load_books(content: Path, exclude: list[str] | None = None) -> tuple[list[Bo
     used: set[str] = set()
     for path in sorted(content.rglob("*.md")):
         rel = path.relative_to(content)
-        if any(part.startswith(".") for part in rel.parts):  # .obsidian, .trash
+        if any(part.startswith(".") or part == "_templates" for part in rel.parts):  # .obsidian, .trash, _templates
             continue
         try:
             source = path.read_text(encoding="utf-8-sig")
@@ -266,6 +273,16 @@ def load_books(content: Path, exclude: list[str] | None = None) -> tuple[list[Bo
             continue
         keys = {str(k).lower(): v for k, v in fm.items()}
         tags = as_tags(keys.get("tags"))
+        types = as_list(keys.get("type"))
+        tokens = {re.sub(r"[\s_-]+", "", value.lower()) for value in (*types, *tags)}
+        for type_value in types:
+            tokens.update(
+                re.sub(r"[\s_-]+", "", value.lower())
+                for value in re.split(r"[,\s]+", type_value)
+            )
+        if "manga" in tokens:
+            skipped.append({"path": str(rel), "reason": "manga is not included in the books-only build"})
+            continue
         norm_tags = {re.sub(r"[\s_-]+", "", t) for t in tags}
         if not norm_tags & BOOK_TAGS:
             skipped.append({"path": str(rel), "reason": "no 'book' tag" if not tags else f"tags are {tags}, none is 'book' or 'e-book'"})
@@ -294,7 +311,7 @@ def load_books(content: Path, exclude: list[str] | None = None) -> tuple[list[Bo
             slug=slug, title=title, path=path,
             source_hash=hashlib.sha256(source.encode("utf-8")).hexdigest(),
             authors=as_list(keys.get("author")),
-            types=as_list(keys.get("type")),
+            types=types,
             series=as_list(keys.get("series")),
             order=as_int(keys.get("order")),
             status=status,
@@ -732,11 +749,32 @@ def sidebar_filters(books: list[Book]) -> dict[str, list[tuple[str, str, int]]]:
 # Build
 # --------------------------------------------------------------------------- #
 
+def site_ui_dir() -> Path:
+    env = os.environ.get("SITE_UI_DIR")
+    return Path(env).expanduser().resolve() if env else ROOT / "vendor" / "site-ui"
+
+
+def site_ui_files(ui: Path) -> list[Path]:
+    """Files of site-ui that belong in the build (not .git, docs, tests, README...)."""
+    return [
+        path for path in sorted(ui.rglob("*"))
+        if path.is_file()
+        and not SITE_UI_SKIP_DIRS & set(path.relative_to(ui).parts)
+        and path.name not in SITE_UI_SKIP_FILES
+        and path.suffix.lower() != ".md"
+    ]
+
+
 def asset_version() -> str:
+    """Hash of static/ and site-ui, so a change to either busts the browser cache and re-renders pages."""
     digest = hashlib.sha1()
     for path in sorted((ROOT / "static").rglob("*")):
         if path.is_file():
             digest.update(path.read_bytes())
+    ui = site_ui_dir()
+    for path in site_ui_files(ui):
+        digest.update(path.relative_to(ui).as_posix().encode())
+        digest.update(path.read_bytes())
     return digest.hexdigest()[:8]
 
 
@@ -849,6 +887,17 @@ def make_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def check_site_ui(ui: Path) -> None:
+    missing = [name for name in SITE_UI_REQUIRED if not (ui / name).is_file()]
+    if not (ui / "fonts").is_dir():
+        missing.append("fonts/")
+    if missing:
+        raise BuildError(
+            f"site-ui not found or incomplete at {ui} (missing: {', '.join(missing)}).\n"
+            "  Run `git submodule update --init`, or set SITE_UI_DIR to a local clone."
+        )
+
+
 def check_project_files() -> None:
     """Fail early, with a clear message, when a template or asset is missing or holds the wrong file's contents."""
     expectations = {
@@ -874,6 +923,9 @@ def check_project_files() -> None:
 def build_site(args: argparse.Namespace) -> dict:
     """Build the site into a staging folder, then swap it into --out."""
     WARNINGS.clear()
+    ui = site_ui_dir()
+    check_site_ui(ui)
+    print(f"Using site-ui: {ui}" + (" (SITE_UI_DIR)" if os.environ.get("SITE_UI_DIR") else ""))
     check_project_files()
     content = args.content.expanduser().resolve()
     if not content.is_dir():
@@ -966,10 +1018,15 @@ def build_site(args: argparse.Namespace) -> dict:
 
         shutil.rmtree(stage / "static", ignore_errors=True)
         shutil.copytree(ROOT / "static", stage / "static", dirs_exist_ok=True)
+        shutil.rmtree(stage / "site-ui", ignore_errors=True)
+        for src in site_ui_files(ui):
+            dest = stage / "site-ui" / src.relative_to(ui)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dest)
         progress = series_progress(books, load_series_totals(args.series.expanduser().resolve(), books))
 
         env = Environment(
-            loader=FileSystemLoader(ROOT / "templates"),
+            loader=FileSystemLoader([ROOT / "templates", ui]),  # ui provides header.html
             autoescape=select_autoescape(["html"]),
             trim_blocks=True, lstrip_blocks=True,
         )
@@ -978,6 +1035,7 @@ def build_site(args: argparse.Namespace) -> dict:
         shared = {
             "site": {"title": args.title},
             "asset_v": asset_v,
+            "theme_init": (ui / "theme.js").read_text(encoding="utf-8"),
             "status_label": STATUS_LABEL,
             "built": date.today().isoformat(),
         }

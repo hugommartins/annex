@@ -1,4 +1,4 @@
-/* Bookshelf client: theme, mobile menu, and (on the library page) live filtering.
+/* Bookshelf client: search, and (on the library page) live filtering. The theme toggle lives in site-ui's theme.js.
    State lives in the URL (?view=series&status=read&q=...) so every view is linkable.
    Attribute contract with templates/_macros.html: data-item, data-status, data-kind, data-year,
    data-types (JSON), data-series (JSON), data-search, data-pages, data-date, data-title, data-author. */
@@ -11,17 +11,6 @@
   var root = document.body.getAttribute('data-root') || '';
   var home = document.body.getAttribute('data-home') || root;
   var isManga = document.body.getAttribute('data-collection') === 'manga';
-
-  /* ---------- theme ---------- */
-  var themeLabel = $('#theme-label');
-  function paintTheme() { themeLabel.textContent = doc.getAttribute('data-theme'); }
-  paintTheme();
-  $('#theme').addEventListener('click', function () {
-    var next = doc.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    doc.setAttribute('data-theme', next);
-    try { localStorage.setItem('theme', next); } catch (e) { /* storage unavailable */ }
-    paintTheme();
-  });
 
   /* Year charts open on the newest year and fade the edge that has more years beyond it. */
   $$('[data-scroll-end]').forEach(function (el) {
