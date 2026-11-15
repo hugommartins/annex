@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "installCommand": "python3 -m pip install markdown python-frontmatter jinja2",
+  "buildCommand": "python3 build.py && rm -rf dist && mkdir -p dist && cp -R dist/",
+  "outputDirectory": "dist"
+}
