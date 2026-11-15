@@ -3,6 +3,17 @@
 data-item data-status="{{ b.status }}" data-kind="{{ b.kind }}" data-year="{{ b.read_year }}" data-types='{{ b.types|tojson }}' data-series='{{ b.series|tojson }}' data-search="{{ b.search_text }}" data-pages="{{ b.pages }}" data-date="{{ b.sort_date }}" data-title="{{ b.title|lower }}" data-author="{{ (b.authors[0] if b.authors else '')|lower }}"
 {%- endmacro %}
 
+{# Site header macro supporting optional icon and caller block #}
+{% macro header(title, root, icon=none) %}
+<header>
+  <div class="header-brand">
+    {% if icon %}<img src="{{ root }}{{ icon }}" alt="" class="brand-icon">{% endif %}
+    <a href="{{ root }}">{{ title }}</a>
+  </div>
+  {{ caller() }}
+</header>
+{% endmacro %}
+
 {# One cover tile. `caption` sits above the cover (series order); `reserve` keeps rows aligned when a caption is missing. #}
 {% macro cover(b, root, caption='', reserve=false, current=false, filterable=true) %}
 <div class="bk-wrap"{% if filterable %} {{ attrs(b) }}{% endif %}>
