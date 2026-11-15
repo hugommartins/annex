@@ -1,6 +1,6 @@
 # annex
 
-Obsidian book notes -> static site (Jinja2). Same paper/moss palette as the digital garden, built as its own thing: bigger covers, a serif display face for titles and section headings, and a page that scrolls normally instead of sitting in a boxed app pane.
+Obsidian book notes -> static site (Jinja2). Same paper/blue-green brand palette as the digital garden, built as its own thing: bigger covers, a serif display face for titles and section headings, and a page that scrolls normally instead of sitting in a boxed app pane.
 
 ```
 pip install -r requirements.txt
@@ -40,22 +40,17 @@ A note is a book if `tags` contains `book` or `ebook` (`e-book` also matches). K
 
 The note body is rendered as markdown on the book page. `[[Other Book]]` links between books; `dataview` blocks and `%%comments%%` are stripped.
 
-## Manga
+## Manga backup
 
-A note is manga when `Type` or `tags` contains `manga`. Manga lives in its own collection, so it never appears on the main page:
-
-- `/manga/` is a full library of its own (shelf, series, filters, search), with volumes instead of books
-- `/manga/stats/` has its own stats
-- the books / manga switch in the top bar moves between the two; it only appears when you have manga
-- series progress, "up next", search and "more by" stay inside the collection, and `series.yml` works for manga series too (`Vagabond: 37`)
+Manga notes remain in `content/manga/` as part of the repository backup, but the site build skips any note whose `Type` or `tags` contains `manga`. They are not published as pages, covers, stats, or search results. Use `--list-skipped` to see the skipped notes.
 
 ## Fiction / non-fiction
 
-On the books page, a "kind" filter pill splits fiction from non-fiction. It reads `Type` (falling back to `tags`) and accepts `Fiction`, `Nonfiction`, `Non-fiction` and `Non Fiction`. Books with neither are still listed but skipped by the filter, and the build warns about them. Manga has no kind.
+On the books page, a "kind" filter pill splits fiction from non-fiction. It reads `Type` (falling back to `tags`) and accepts `Fiction`, `Nonfiction`, `Non-fiction` and `Non Fiction`. Books with neither are still listed but skipped by the filter, and the build warns about them.
 
 ## Search
 
-The search box lives in the top bar, on every page. On a library page it filters the shelf and series views live. On book and stats pages it opens a dropdown of matches from `search.json`, within the same collection; Enter or "open in library" continues the search on the library page.
+The search box lives in the top bar, on every page. On the library page it filters the shelf and series views live. On book and stats pages it opens a dropdown of matches from `search.json`; Enter or "open in library" continues the search on the library page.
 
 ## Views
 
@@ -77,7 +72,7 @@ python build.py --list-skipped
 
 The most common reasons, in order of how often they bite:
 
-- **It's manga.** A note with `manga` in `Type` or `tags` goes to `/manga/`, not the main page — see below.
+- **It's manga.** Notes with `manga` in `Type` or `tags` are intentionally skipped by this books-only build and kept in `content/manga/` as a repository backup.
 - **No `book` tag**, or a typo like `Book` in a language YAML lowercases differently, or `tags:` written as a single unquoted string.
 - **`publish: false` or `draft: true`** in the frontmatter, or a folder/name matched by `--exclude`.
 - **Frontmatter that fails to parse** — an unquoted colon or apostrophe in a title, author, or series name is the usual cause (e.g. `Series: Kingkiller: Chronicle` needs quotes: `Series: "Kingkiller: Chronicle"`). These show up as warnings during the build even without `--list-skipped`.
@@ -107,14 +102,14 @@ When a series has sub-series — a book's `Series` list has a second entry, like
 
 ## Stats
 
-`/stats/` (and `/manga/stats/`) shows books and pages finished per year, linked from the top bar. Each year is a column; the chart opens on the newest year and scrolls sideways, so it stays readable with decades of history. Years come from `FinishedDate`, falling back to `Year`. Click a year to see that year's books.
+`/stats/` shows books and pages finished per year, linked from the top bar. Each year is a column; the chart opens on the newest year and scrolls sideways, so it stays readable with decades of history. Years come from `FinishedDate`, falling back to `Year`. Click a year to see that year's books.
 
 ## Output
 
-`dist/index.html`, `dist/stats/`, `dist/manga/` (with its own `stats/`), `dist/search.json`, `dist/books/<slug>/index.html`, `dist/covers/`, `dist/static/`. Paths are relative, so the site works under any subpath (serve it over HTTP; `file://` doesn't resolve folder URLs). Filters and views live in the URL, e.g. `/?series=Discworld&view=series`.
+`dist/index.html`, `dist/stats/`, `dist/search.json`, `dist/books/<slug>/index.html`, `dist/covers/`, `dist/static/`. Paths are relative, so the site works under any subpath (serve it over HTTP; `file://` doesn't resolve folder URLs). Filters and views live in the URL, e.g. `/?series=Discworld&view=series`.
 
 Options: `--exclude`, `--series` (path to series totals), `--list-skipped`, `--offline` (cache only), `--strict` (fail on warnings), `--title`, `--cache`, `--no-incremental` (force all book pages to render).
 
 ## Design
 
-There's no sidebar — the page is just `.topbar` (wordmark, collections switch, search, stats link, theme toggle) and `.main` (whatever the page renders), with the top bar sticky and everything else scrolling normally. Colors and fonts are tokens at the top of `static/style.css`. Book titles, the site title, and section headings ("Discworld", "read in 2025"...) are set in a serif display face (Fraunces); everything else — labels, dates, counts, tags, buttons — stays in the garden's monospace. The favicon is an inline SVG in `templates/base.html`; swap the `<link rel="icon">` there to change it.
+There's no sidebar — the page is just `.topbar` (wordmark, search, stats link, theme toggle) and `.main` (whatever the page renders), with the top bar sticky and everything else scrolling normally. Colors and fonts are tokens at the top of `static/style.css`. Book titles, the site title, and section headings ("Discworld", "read in 2025"...) are set in a serif display face (Fraunces); everything else — labels, dates, counts, tags, buttons — stays in the garden's monospace. The favicon is an inline SVG in `templates/base.html`; swap the `<link rel="icon">` there to change it.
