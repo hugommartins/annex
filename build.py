@@ -1134,6 +1134,12 @@ def build_site(args: argparse.Namespace) -> dict:
         index = [{"t": b.title, "a": ", ".join(b.authors), "s": b.slug, "k": b.search_text, "m": int(b.manga)}
                  for b in sorted(books, key=lambda b: b.title.lower())]
         (stage / "search.json").write_text(json.dumps(index, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        
+        reading = [
+            {"title": b.title, "authors": b.authors, "href": f"books/{b.slug}/", "cover": b.cover}
+            for b in by_recent([b for b in main_books if b.status == "reading"])
+        ]
+        (stage / "reading.json").write_text(json.dumps(reading, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
         clean_output(final)
         for child in stage.iterdir():
