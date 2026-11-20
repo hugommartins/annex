@@ -4,7 +4,7 @@ tags:
   - fiction
   - sciFi
   - murderbot
-Cover: https://covers.openlibrary.org/b/id/13127133-M.jpg
+Cover: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fm.media-amazon.com%2Fimages%2FI%2F71i5kUJaGdL._SL1500_.jpg&f=1&nofb=1&ipt=168a67f58a435f32b6c19f8610449bfb57decc03f5aa7718b523ecbab710e8ee&ipo=images
 Type: Fiction, Sci-Fi
 Author: Martha Wells
 Series: The Murderbot Diaries
@@ -15,15 +15,4 @@ Pages:
 StartedDate:
 FinishedDate:
 ReleaseDate: 2023
-Notes: http://localhost:8000/books/system-collapse/
 ---
-
-*Am I making it worse? I think I'm making it worse.*
-
-Everyone's favorite lethal SecUnit is back.
-
-Following the events in Network Effect, the Barish-Estranza corporation has sent rescue ships to a newly-colonized planet in peril, as well as additional SecUnits. But if there’s an ethical corporation out there, Murderbot has yet to find it, and if Barish-Estranza can’t have the planet, they’re sure as hell not leaving without something. If that something just happens to be an entire colony of humans, well, a free workforce is a decent runner-up prize.
-
-But there’s something wrong with Murderbot; it isn’t running within normal operational parameters. ART’s crew and the humans from Preservation are doing everything they can to protect the colonists, but with Barish-Estranza’s SecUnit-heavy persuasion teams, they’re going to have to hope Murderbot figures out what’s wrong with itself, and fast!
-
-*Yeah, this plan is... not going to work.* 
