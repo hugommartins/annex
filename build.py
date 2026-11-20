@@ -452,9 +452,16 @@ class Covers:
     def prepare(self, book: Book) -> None:
         if book.cover_source and self._real(book):
             return
-        (self.out_dir / f"{book.slug}.svg").write_text(generated_cover_svg(book), encoding="utf-8")
-        book.cover, book.cover_w, book.cover_h = f"covers/{book.slug}.svg", 200, 300
+        dest = self._emit(book, "svg", generated_cover_svg(book).encode("utf-8"))
+        book.cover, book.cover_w, book.cover_h = f"covers/{dest.name}", 200, 300
         self.stats["generated"] += 1
+
+    def _emit(self, book: Book, ext: str, payload: bytes) -> Path:
+        """Write a cover as <slug>.<content-hash>.<ext>. A changed image gets a new URL, so
+        browsers and CDNs can cache covers forever without ever showing a stale one."""
+        dest = self.out_dir / f"{book.slug}.{hashlib.sha1(payload).hexdigest()[:8]}.{ext}"
+        dest.write_bytes(payload)
+        return dest
 
     def input_fingerprint(self, book: Book) -> str:
         source = book.cover_source
@@ -484,8 +491,7 @@ class Covers:
         cached_webp = self.webp_dir / f"{key}-{COVER_VERSION}.webp"
 
         if Image is not None and cached_webp.exists():
-            dest = self.out_dir / f"{book.slug}.webp"
-            shutil.copyfile(cached_webp, dest)
+            dest = self._emit(book, "webp", cached_webp.read_bytes())
             with Image.open(dest) as img:
                 book.cover, book.cover_w, book.cover_h = f"covers/{dest.name}", img.width, img.height
             self.stats["cached"] += 1
@@ -524,8 +530,7 @@ class Covers:
 
         if fetched:
             self.stats["downloaded"] += 1
-        dest = self.out_dir / f"{book.slug}.{ext}"
-        dest.write_bytes(payload)
+        dest = self._emit(book, ext, payload)
         book.cover, book.cover_w, book.cover_h = f"covers/{dest.name}", w, h
         return True
 
