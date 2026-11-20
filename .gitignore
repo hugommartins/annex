@@ -1,6 +1,7 @@
 # Generated site and build cache
 /dist/
-/.cache/
+/.cache/raw/
+/.cache/build-state/
 
 # Local Python environment and bytecode
 .venv/

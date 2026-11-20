@@ -5,10 +5,13 @@
   "outputDirectory": "dist",
   "headers": [
     {
-      "source": "/reading.json",
+      "source": [
+        "/reading.json",
+        "/covers/(.*)"
+      ],
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=3600" }
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
       ]
     }
   ]
