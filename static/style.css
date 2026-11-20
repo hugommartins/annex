@@ -156,7 +156,7 @@ a.tag:hover, a.tag:focus-visible, a.tag:active { background: var(--brand-hover);
   display: block; width: 100%; height: 100%; object-fit: cover;
 }
 
-/* status: ribbon = reading, faded = to read, plain = read */ 
+/* status: ribbon = reading, faded = to read, plain = read */
 .bk.s-want .bk-img img { filter: grayscale(1); opacity: 0.55; }
 .bk.s-want:hover .bk-img img, .bk.s-want:focus-visible .bk-img img { filter: none; opacity: 1; }
 .bk.is-current .bk-img { outline: 3px solid var(--brand); outline-offset: 4px; }
@@ -168,8 +168,22 @@ a.tag:hover, a.tag:focus-visible, a.tag:active { background: var(--brand-hover);
   color: var(--mist); text-decoration: none; border-bottom: 1px solid var(--line);
 }
 .back:hover, .back:focus-visible, .back:active { color: var(--brand-hover); border-bottom-color: var(--brand-hover); }
-.detail-head { display: flex; align-items: flex-start; gap: 2.25rem; margin-bottom: 2.25rem; }
-.detail-cover { flex: none; --cw: 220px; }
+.detail-head { display: flex; align-items: flex-start; gap: 2rem; margin-bottom: 2.25rem; }
+.detail-cover { flex: none; --cw: 160px; }
+.detail-text { flex: 1 1 0; min-width: 0; align-self: center; }
+.note-title.is-long { font-size: clamp(1.7rem, 3vw, 2.25rem); }
+
+/* description: the note body, shown under the head; long text is clamped with a fade (see book.html) */
+.description { max-width: 640px; margin-bottom: 2.25rem; }
+.description .note-body > :last-child { margin-bottom: 0; }
+.description.is-clamped .note-body {
+  max-height: 9.5rem; max-height: 5.5lh; /* ~5 lines of whatever --fs-body / --lh-body are; rem is the fallback */
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(#000 60%, transparent);
+  mask-image: linear-gradient(#000 60%, transparent);
+}
+.description-toggle { margin-top: 0.75rem; }
+.description-toggle[hidden] { display: none; }
 .detail-head .note-title { margin-bottom: 0.6rem; }
 .detail-head .note-meta { margin-bottom: 0; font-family: var(--font-serif); font-size: 1.05rem; color: var(--mist); }
 .meta-list {
@@ -183,7 +197,7 @@ a.tag:hover, a.tag:focus-visible, a.tag:active { background: var(--brand-hover);
 .meta-list dt { color: var(--mist); }
 .meta-list dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem; margin: 0; }
 
-.backlinks { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--line); transition: var(--t); }
+.backlinks { margin-top: 3rem; padding-top: 2rem; transition: var(--t); }
 .backlinks .group-head { border-bottom: 0; padding-bottom: 0; margin-bottom: 1.4rem; }
 .backlink-list { display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 0; padding: 0; list-style: none; }
 .backlink-item {
@@ -211,12 +225,16 @@ a.tag:hover, a.tag:focus-visible, a.tag:active { background: var(--brand-hover);
 .note-body ul ul, .note-body ol ul, .note-body ul ol, .note-body ol ol {
   margin: 0.35rem 0 0.35rem 0.2rem; padding-left: 1rem; border-left: 1px solid var(--line);
 }
-.note-body a {
+.note-body a,
+.ext-link {
   color: var(--brand-text); text-decoration: none; word-break: break-word;
 }
-.note-body a:hover, .note-body a:focus-visible, .note-body a:active { color: var(--brand-hover); text-decoration: underline; }
-/* external-link icon: a mask, so it takes the link colour in both themes and on every site */
-.note-body a[href^="http"]::after {
+.note-body a:hover, .note-body a:focus-visible, .note-body a:active,
+.ext-link:hover, .ext-link:focus-visible, .ext-link:active { color: var(--brand-hover); text-decoration: underline; }
+/* external-link icon: a mask, so it takes the link colour in both themes and on every site.
+   `.ext-link` gives the same treatment to an external link outside the note body (e.g. the meta list). */
+.note-body a[href^="http"]::after,
+.ext-link::after {
   content: ''; display: inline-block; width: 10px; height: 10px; margin-left: 4px; vertical-align: baseline;
   background: currentColor;
   -webkit-mask: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
@@ -314,10 +332,24 @@ a.tag:hover, a.tag:focus-visible, a.tag:active { background: var(--brand-hover);
   .search-wrap { flex: 1 1 auto; width: 100%; }
 }
 @media (max-width: 560px) {
-  :root { --cw: 118px; }
-  .covers { gap: 1.5rem 14px; }
-  .detail-head { flex-direction: column; gap: 1.4rem; }
-  .detail-cover { --cw: 168px; }
+  /* Covers: 3 per row, left-aligned, each filling its column. The #view-covers selector
+     is needed to beat the base `justify-content: center` rule; .covers.mini covers the
+     series and "more by" shelves. */
+  .covers,
+  .covers.mini,
+  #view-covers .covers {
+    --cw: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: start;
+    gap: 1.5rem 12px;
+  }
+  .bk-wrap { align-items: stretch; }
+
+  /* book page: small cover beside the title, left-aligned */
+  .detail-head { gap: 1rem; margin-bottom: 1.5rem; }
+  .detail-cover { --cw: 112px; }
+  .detail-head .note-title { font-size: 1.55rem; }
+  .description.is-clamped .note-body { max-height: 7.5rem; max-height: 4.5lh; }
   .stats-card { padding: 1.5rem 1.1rem 1.25rem; border-radius: 10px; }
   .ychart { gap: 0.6rem; }
   .ychart-axis { width: 2.9rem; }

@@ -209,6 +209,7 @@ class Book:
     cover_w: int = 0
     cover_h: int = 0
     body_html: str = ""
+    notes_url: str = ""
     tags: list[str] = field(default_factory=list)
 
     @property
@@ -320,6 +321,7 @@ def load_books(content: Path, exclude: list[str] | None = None) -> tuple[list[Bo
             finished=as_date(keys.get("finisheddate")),
             year_field=as_int(keys.get("year")),
             cover_source=(as_list(keys.get("cover")) or [""])[0],
+            notes_url=next((u for u in as_list(keys.get("notes")) if re.match(r"https?://", u, re.I)), ""),
             body=body, tags=tags,
         ))
     return books, skipped
@@ -745,6 +747,17 @@ def sidebar_filters(books: list[Book]) -> dict[str, list[tuple[str, str, int]]]:
     }
 
 
+def more_by_author(book: Book, pool: list[Book], shown: set[str]) -> list[dict]:
+    """Other books by each of this book's authors, one group per author, so a co-authored
+    book (Jordan + Sanderson) doesn't merge both authors' shelves into a single list."""
+    groups = []
+    for author in book.authors:
+        others = [b for b in pool if b.slug not in shown and author in b.authors]
+        if others:
+            groups.append({"author": author, "books": others})
+    return groups
+
+
 # --------------------------------------------------------------------------- #
 # Build
 # --------------------------------------------------------------------------- #
@@ -849,7 +862,7 @@ def book_page_fingerprint(
     book: Book,
     by_title: dict[str, Book],
     group: dict | None,
-    more_by: list[Book],
+    more_groups: list[dict],
     shared: str,
     root: str,
 ) -> str:
@@ -864,7 +877,7 @@ def book_page_fingerprint(
         "cover": (book.cover, book.cover_w, book.cover_h),
         "links": links,
         "group": group_page_data(group),
-        "more_by": [(other.slug, other.title) for other in more_by],
+        "more_by": [(g["author"], [(other.slug, other.title) for other in g["books"]]) for g in more_groups],
         "root": root,
     })
 
@@ -983,7 +996,7 @@ def build_site(args: argparse.Namespace) -> dict:
     stage.mkdir(parents=True)
     try:
         if incremental:
-            known_outputs = {"index.html", "search.json", "static", "covers", "books", "stats", "manga"}
+            known_outputs = {"index.html", "search.json", "reading.json", "static", "covers", "books", "stats", "manga"}
             for child in final.iterdir():
                 if child.name not in known_outputs:
                     continue
@@ -1092,10 +1105,14 @@ def build_site(args: argparse.Namespace) -> dict:
             group = groups.get(book.primary_series)
             blocks = [group] if group and (len(group["books"]) > 1 or (group["progress"] and group["progress"]["total"])) else []
             shown = {book.slug} | ({b.slug for b in group["books"]} if blocks else set())
+            # `more_by_groups`: one entry per author ({"author", "books"}), the fix for co-authored
+            # books. `more_by`: the old flat union, kept so a template that hasn't been updated
+            # yet keeps rendering.
+            more_groups = more_by_author(book, pool, shown)
             more = [b for b in pool if b.slug not in shown and set(b.authors) & set(book.authors)]
             root = "../../"
             fingerprint = book_page_fingerprint(
-                book, by_title, blocks[0] if blocks else None, more, shared_fingerprint, root,
+                book, by_title, blocks[0] if blocks else None, more_groups, shared_fingerprint, root,
             )
             previous = previous_books.get(book.slug, {})
             cover_path = book.cover
@@ -1120,7 +1137,7 @@ def build_site(args: argparse.Namespace) -> dict:
             render(
                 "book.html", page_path, root,
                 "manga" if book.manga else "books",
-                b=book, series_blocks=blocks, more_by=more,
+                b=book, series_blocks=blocks, more_by=more, more_by_groups=more_groups,
             )
             rendered_books += 1
 
@@ -1134,7 +1151,9 @@ def build_site(args: argparse.Namespace) -> dict:
         index = [{"t": b.title, "a": ", ".join(b.authors), "s": b.slug, "k": b.search_text, "m": int(b.manga)}
                  for b in sorted(books, key=lambda b: b.title.lower())]
         (stage / "search.json").write_text(json.dumps(index, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-        
+
+        # Books currently being read, for the portfolio's "reading now" line. Paths are
+        # relative to the bookshelf root.
         reading = [
             {"title": b.title, "authors": b.authors, "href": f"books/{b.slug}/", "cover": b.cover}
             for b in by_recent([b for b in main_books if b.status == "reading"])

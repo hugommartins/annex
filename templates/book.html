@@ -12,11 +12,18 @@
     <div class="detail-cover s-{{ b.status }}">
       <span class="bk-img"><img src="{{ root }}{{ b.cover }}" alt="Cover of {{ b.title }}" width="{{ b.cover_w or 200 }}" height="{{ b.cover_h or 300 }}"></span>
     </div>
-    <div>
-      <h1 class="note-title">{{ b.title }}</h1>
+    <div class="detail-text">
+      <h1 class="note-title{% if b.title|length > 40 %} is-long{% endif %}">{{ b.title }}</h1>
       {% if b.authors %}<p class="note-meta">{{ b.authors|join(', ') }}</p>{% endif %}
     </div>
   </div>
+
+  {% if b.body_html %}
+  <div class="description">
+    <div class="note-body">{{ b.body_html|safe }}</div>
+    <button type="button" class="pill description-toggle" aria-expanded="false" hidden>Read more</button>
+  </div>
+  {% endif %}
 
   <dl class="meta-list">
     <dt>status</dt><dd><span class="tag">{{ status_label[b.status] }}</span></dd>
@@ -35,11 +42,11 @@
     <dt>type</dt>
     <dd>{% for t in b.types %}<a class="tag" href="{{ home }}?type={{ t|urlencode }}">{{ t }}</a>{% endfor %}</dd>
     {% endif %}
+    {% if b.notes_url %}
+    <dt>notes</dt>
+    <dd><a class="ext-link" href="{{ b.notes_url }}" rel="noopener">my notes in the garden</a></dd>
+    {% endif %}
   </dl>
-
-  {% if b.body_html %}
-  <div class="note-body">{{ b.body_html|safe }}</div>
-  {% endif %}
 
   {% for block in series_blocks %}
   <section class="backlinks">
@@ -47,13 +54,42 @@
   </section>
   {% endfor %}
 
-  {% if more_by %}
+  {% for g in more_by_groups %}
   <section class="backlinks">
-    <div class="group-head"><h2>more by {{ b.authors[0] }}</h2></div>
+    <div class="group-head"><h2>more by {{ g.author }}</h2></div>
     <ul class="backlink-list">
-      {% for x in more_by %}<li><a class="backlink-item" href="{{ root }}books/{{ x.slug }}/">{{ x.title }}</a></li>{% endfor %}
+      {% for x in g.books %}<li><a class="backlink-item" href="{{ root }}books/{{ x.slug }}/">{{ x.title }}</a></li>{% endfor %}
     </ul>
   </section>
-  {% endif %}
+  {% endfor %}
 </article>
+
+{% if b.body_html %}
+<script>
+/* Clamp a long description and offer "Read more"; the button only appears when the text overflows. */
+(function () {
+  document.querySelectorAll(".description").forEach(function (box) {
+    var body = box.querySelector(".note-body");
+    var btn = box.querySelector(".description-toggle");
+    if (!body || !btn) return;
+    function fit() {
+      if (btn.getAttribute("aria-expanded") === "true") return;
+      box.classList.add("is-clamped");
+      var overflows = body.scrollHeight > body.clientHeight + 2;
+      if (!overflows) box.classList.remove("is-clamped");
+      btn.hidden = !overflows;
+    }
+    btn.addEventListener("click", function () {
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!open));
+      btn.textContent = open ? "Read more" : "Show less";
+      box.classList.toggle("is-clamped", open);
+    });
+    fit();
+    window.addEventListener("load", fit);
+    window.addEventListener("resize", fit);
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}
