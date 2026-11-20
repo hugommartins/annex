@@ -21,5 +21,3 @@ CurrentPage: 698
 OrderInYear: 14
 Month: June
 ---
-
-Last modified @ `$= dv.current().file.mtime`

@@ -12,5 +12,3 @@ OrderInYear: 6
 Pages: 506
 
 ---
-
-Last modified @ `$= dv.current().file.mtime`

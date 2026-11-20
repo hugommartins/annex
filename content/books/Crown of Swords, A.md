@@ -21,4 +21,4 @@ OrderInYear: 3
 Pages: 839
 CurrentPage: 839
 ---
-Last modified @ `$= dv.current().file.mtime`
+

@@ -13,21 +13,3 @@ CurrentPage:
 withNotes: True
 OrderInYear:
 ---
-Last modified @ `$= dv.current().file.mtime`
-# The Scout Mindset
-
-Type: `= this.Type`
-Author: `= this.Author`
-Finished Year: `= this.Year`
-
-# Thoughts
-
-# Highlights & Notes
-
-## Chapter 1 Two Types of Thinking
-- 
-
-## Chapter 2 What the Soldier is Protecting
-
-
-# Summary of Key Points

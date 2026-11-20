@@ -12,4 +12,3 @@ Month: April
 OrderInYear: 8
 ---
 
-Last modified @ `$= dv.current().file.mtime`

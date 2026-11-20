@@ -18,34 +18,4 @@ withNotes: false
 OrderInYear: 20
 FinishedDate: 2023-11-17
 ---
-Last modified @ `$= dv.current().file.mtime`
 
-Type: `= this.Type`
-Author: `= this.Author`
-Finished Year: `= this.Year`
-
-Links: 
-
-# Thoughts
-
-# Highlights & Notes
-
-## Part One: Regret is Worse Than Embarrassment
-
-## Part Two: Choice Architecture
-
-## Part Three: The Spirit of the Law, Not the Letter of the Law
-
-## Part Four: The Message is the Medium
-
-## Part Five: Disaster is a Gift
-
-## Part Six: The Value of Ignorance
-
-## Part Seven: Question the Question
-
-## Part Eight: Belief Trumps Fact
-
-## Part Nine: Creativity is Messy
-
-# Summary of Key Points
